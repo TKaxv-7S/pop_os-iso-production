@@ -39,6 +39,9 @@ $(BUILD)/chroot: $(BUILD)/debootstrap
 	# Mount chroot
 	"scripts/mount.sh" "$@.partial"
 
+	# Workaround for dracut issue on 26.04 when nvidia driver runs update-initramfs with host kernel
+	sudo mkdir -p "$@.partial/lib/modules/$(shell uname -r)"
+
 	# Install dependencies of chroot script
 	sudo $(CHROOT) "$@.partial" /bin/bash -e -c \
 		"UPDATE=1 \
@@ -124,6 +127,9 @@ $(BUILD)/chroot: $(BUILD)/debootstrap
 
 	# Remove apt preferences
 	sudo rm "$@.partial/etc/apt/preferences.d/pop-iso"
+
+	# Remove workaround for dracut issue on 26.04
+	sudo rmdir --ignore-fail-on-non-empty "$@.partial/lib/modules/$(shell uname -r)"
 
 	# Unmount chroot
 	"scripts/unmount.sh" "$@.partial"
